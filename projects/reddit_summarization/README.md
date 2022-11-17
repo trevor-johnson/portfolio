@@ -6,7 +6,6 @@ While this was a group project, all code in this repository is my own.
 
 ## Links
 
-- [Github repo](https://github.com/trevor-johnson/w266_reddit_summarization)
-- [Research paper](https://github.com/trevor-johnson/w266_reddit_summarization/blob/master/final_paper/final_paper.pdf)
+- [Research paper](https://github.com/trevor-johnson/portfolio/blob/main/projects/reddit_summarization/final_paper/final_paper.pdf)
 - [My fine tuned Reddit BART model on Huggingface](https://huggingface.co/trevorj/BART_reddit)
 - [Reddit dataset](https://huggingface.co/datasets/reddit)
