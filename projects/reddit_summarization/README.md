@@ -1,8 +1,12 @@
 # Reddit TLDR Abstractive Summarization Model
 
-We present a method to produce abstractive summaries of informal social media text via neural abstractive summarization. 
-We test a model that has achieved state-of-the-art text summarization performance in the news domain and evaluate its performance in the social media domain.
-In addition, we test models trained on smaller genre specific datasets against a model trained on a larger dataset that includes all genres 
-to assess if training on a smaller specialized dataset can produce higher ROUGE scores. 
-In almost all cases, we find a model trained on a larger generalized dataset produces higher ROUGE scores than comparable models 
-trained on smaller specialized datasets.
+For my final project in my Natural Language Processing class at UC Berkeley, a classmate and I created an NLP model that generates abstractive summaries of long Reddit posts. To do so, we began with a dataset of Reddit posts that already had a TLDR written by the author. With this dataset, we trained a BART model using PyTorch to generate fluent and faithful summaries for long Reddit posts. Furthermore, we trained separate BART models on genre-specific posts by using the subreddits as categories. In almost all cases, we find a model trained on a larger generalized dataset produces higher ROUGE scores than comparable models trained on smaller specialized datasets. The results are formally documented in a research paper.
+
+While this was a group project, all code in this repository is my own.
+
+## Links
+
+- [Github repo](https://github.com/trevor-johnson/w266_reddit_summarization)
+- [Research paper](https://github.com/trevor-johnson/w266_reddit_summarization/blob/master/final_paper/final_paper.pdf)
+- [My fine tuned Reddit BART model on Huggingface](https://huggingface.co/trevorj/BART_reddit)
+- [Reddit dataset](https://huggingface.co/datasets/reddit)
