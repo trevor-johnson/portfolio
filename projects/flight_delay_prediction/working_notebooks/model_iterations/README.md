@@ -1,0 +1,1 @@
+I performed a lot of hyperparameter tuning using cross validation to find the optimal hyperparameters for XGBoost and random forest. These notebooks contain my scratch work of my many model iterations
