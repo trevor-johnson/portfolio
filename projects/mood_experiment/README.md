@@ -8,5 +8,5 @@ While this was a group project, all code in this repository is my own. The full 
 
 ## Links
 
-- [Github repo](https://github.com/trevor-johnson/personality_test_experiment)
-- [Final report](https://github.com/trevor-johnson/personality_test_experiment/blob/master/final_report/final_report.pdf)
+- [Final report](https://github.com/trevor-johnson/portfolio/blob/main/projects/mood_experiment/final_report/final_report.pdf)
+
