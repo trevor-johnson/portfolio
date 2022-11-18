@@ -1,6 +1,6 @@
-# Data Science Portfolioo
+# Data Science Portfolio
 
-Follow links below to see code and more information about each project:
+Follow the links below to jump to the folder and see the code and more information about each project:
 
 ## [Reddit TLDR Abstractive Summarization Model](https://github.com/trevor-johnson/portfolio/tree/main/projects/reddit_summarization) 
 
@@ -15,7 +15,7 @@ Follow links below to see code and more information about each project:
 ## [Predicting Flight Delays](https://github.com/trevor-johnson/portfolio/tree/main/projects/flight_delay_prediction) 
 
 - Overview: Combined over 600m records of flight and weather data to predict whether or not a flight would be delayed, 15 minutes before departure time. 
-- Tools used: `PySpark`, `SparkSQL`
+- Tools used: `PySpark`, `SparkSQL`, `Databricks`
 
 
 ## [Housing Price Prediction Challenge](https://github.com/trevor-johnson/portfolio/tree/main/projects/house_price_prediction) 
