@@ -1,6 +1,9 @@
 # Predicting the sale price of a home (Kaggle competition)
 
+## Overview
+
 A team and I competed in a Kaggle competition to build a machine learning model to predict the sale price of a home. Our final model was an ensemble machine learning regression model which includes XGBoost, random forest, and lasso regression. Our predictions put us into the top 10% of Kaggle submissions. 
+
 
 ## Links
 
