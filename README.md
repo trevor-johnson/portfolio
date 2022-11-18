@@ -28,7 +28,7 @@ Follow the links below to jump to the folder and see the code and more informati
 - Overview: A command line simulator/game of Roulette where you can test strategies, view dataviz of your winning history, and take down the house!
 - Tools used: `python`
 
-## [Interactive Financial Data Dashboard]()
+## [Interactive Financial Data Dashboard](https://github.com/trevor-johnson/portfolio/tree/main/projects/financial_data_dashboard)
 
 - Overview: A data dashboard built in R Shiny that uses web scrapping and APIs to pull financial data.
 - Tools used: `R`, `Shiny`
