@@ -1,0 +1,31 @@
+/* style sheet for the finance app */
+
+/* long bar on top */
+.skin-blue .main-header .logo {
+    background-color: #273135;
+}
+.skin-blue .main-header .logo:hover {
+    background-color: #5e5e5e;
+}
+
+/*little box for retracting*/
+.skin-blue .main-header .navbar {
+    background-color: #273135;
+}
+.skin-blue .main-header .navbar .sidebar-toggle:hover {
+    background-color: #5e5e5e;
+}
+
+.box.box-solid.box-primary>.box-header {
+    color: #fff;
+    background: #273135;
+    background-color: #273135;
+}
+
+/* button colors */
+.div_button {
+    background-color: #009933;
+    color: #009933;
+}
+
+

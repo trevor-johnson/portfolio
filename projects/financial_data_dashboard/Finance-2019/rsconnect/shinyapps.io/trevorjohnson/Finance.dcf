@@ -1,0 +1,12 @@
+name: Finance
+title: Finance
+username:
+account: trevorjohnson
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1121218
+bundleId: 2362088
+url: https://trevorjohnson.shinyapps.io/Finance/
+when: 1566963619.06321
+asMultiple: FALSE
+asStatic: FALSE
