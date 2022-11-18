@@ -1,0 +1,297 @@
+---
+title: "Survey Data"
+author: "Trevor Johnson"
+date: "11/1/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+Libraries
+
+```{r}
+library(data.table)
+library(tidyverse)
+library(janitor)
+```
+
+Read in data
+
+```{r}
+# Original data file isn't saved to github, only google drive.
+# Download the survey data and the questions_scores.csv file.
+# Then specify the path where you saved the files
+# After that, everything else below should work
+path <- "~/Desktop/data"
+
+df <- "W241_Survey_Results.csv" %>% file.path(path, .) %>% fread
+q_scores <- "question_scores.csv" %>% file.path(path, .) %>% fread
+```
+
+Set up mappings for later
+
+```{r}
+agree_mapping <- data.table(
+  desc = c("Disagree", "Somewhat Disagree", "Neutral", "Somewhat Agree", "Agree"),
+  score = 1:5
+)
+
+letter_mapping <- data.table(
+  letter = c("E", "A", "C", "N", "O"), 
+  personality = c("Extroversion", "Agreeableness", "Conscientiousness", "Neuroticism", "Openness to Experience")
+)
+```
+
+
+Get question names. Don't need to re-run this. This is just to extract the questions for google sheets
+
+```{r}
+# extract the question portion of the title
+# questions <- names(df)[grepl("Please indicate the extent", names(df))] %>% 
+#   str_replace("Please indicate the extent to which you agree or disagree with each statement. - ", "")
+
+# copy questions to clipboard so we can paste them into google sheets for score lookups
+# clip <- pipe("pbcopy", "w")
+# write.table(data.frame(questions), file=clip,row.names=FALSE)    
+# close(clip)
+```
+
+Data cleaning
+
+```{r}
+# make the first row be the column names because they are more descriptive
+names(df) <- unlist(df[1,])
+
+# first row can be removed for actual analysis
+df <- df[2:nrow(df),]
+
+# Clean up question columns
+old_names <- names(df)[grepl("Please indicate the extent", names(df))]
+new_names <- old_names %>% str_replace("Please indicate the extent to which you agree or disagree with each statement. - ", "")
+setnames(x = df, old = old_names, new = new_names)
+
+# more cleaning
+df <- df %>% 
+  
+  # this function cleans up column names to make all spaces underscores, and removes special chars  
+  janitor::clean_names() %>% 
+
+  # fix some date columns
+  mutate_at(c("start_date", "end_date", "recorded_date"), list(~as.Date(., "%Y-%m-%d"))) %>% 
+
+  # rename a few cols w long names
+  rename(
+  dob_month = please_enter_your_date_of_birth_month_please_select,
+  dob_day = please_enter_your_date_of_birth_day_please_select, 
+  education_highest = what_is_the_highest_level_of_school_you_have_completed_or_the_highest_degree_you_have_received,
+  familiar_with_test = are_you_familiar_with_the_five_factor_personality_test,
+  taken_test_before = have_you_taken_the_five_factor_personality_test_before,
+  compliance_q_glass = according_to_the_video_you_just_watched_what_style_of_glass_pitcher_was_produced,
+  compliance_q_mclaughlin = which_of_the_following_animals_was_not_shown_in_the_video_you_just_watched)
+
+
+# get question names again to use later
+q_cols <- df %>% select(i_am_the_life_of_the_party:i_am_full_of_ideas) %>% names()
+
+# convert to long format
+df_long <- melt.data.table(df, measure.vars = q_cols, variable.name = "question", value.name = "answer") %>% 
+  
+  # join w/ the score mappings
+  left_join(select(q_scores, q_clean, letter, plus_minus), by = c("question" = "q_clean")) %>% 
+  
+  # convert agree/disagree etc. to numeric
+  left_join(agree_mapping, by = c("answer" = "desc")) %>% 
+  mutate(score2 = score * plus_minus)
+
+
+# save the full dataset
+# fwrite(df, "full_data.csv")
+```
+
+Check out fishy responses
+
+```{r}
+# 6 people answered neutral all the way down
+df_long[,.N, by = c("response_id", "answer")][answer=="Neutral"]
+
+# 10 people just put the same thing every time
+df_long[,.N, by = c("response_id", "answer")][N == 50]
+
+# 17 people basically put the same answer all the way down, with only slight variations
+df_long[,.N, by = c("response_id", "answer")][N >= 45]
+```
+
+Create function to compute score for a user given response_id.
+
+```{r}
+calc_score <- function(id, df = df_long, wide_output=FALSE){
+  score_df <- df[response_id == id][,.(score = sum(score2)), by = "letter"]
+# each personality type has a baseline per the documentation
+  score_df[, baseline := 
+             ifelse(letter == "E", 20, 
+             ifelse(letter == "A", 14, 
+             ifelse(letter == "C", 14, 
+             ifelse(letter == "N", 38, 
+             ifelse(letter == "O", 8, 
+                    # use 999 as an error
+                    99999)))))]
+  
+  score_df[, final_score := baseline + score]
+  score_df <- score_df[, .(letter, final_score)]
+  
+  if (wide_output){
+    
+    df_wide <- data.frame(matrix(ncol=5))
+    df_wide[1,] <- score_df$final_score
+    names(df_wide) <- c("personality_e", "personality_a", 
+                        "personality_c", "personality_n", "personality_o")
+    df_wide$response_id <- id
+    
+    return(df_wide)
+    
+  }else{
+    return(data.frame(score_df))
+  }
+  
+}
+
+# test it out
+calc_score("R_10xBdoxbP4TBlzD")
+calc_score("R_10xBdoxbP4TBlzD", wide_output = TRUE)
+```
+
+Aggregate everyone's results
+
+```{r}
+agg_results <- function(ids, df = df_long){
+  
+  # initialize df w/ 1 person's score
+  agg_results_df <- calc_score(ids[1], df_long)
+
+  # loop through all unique ids calculating their scores and stack the df's
+  for (i in 2:length(ids)){
+    agg_results_df <- rbind(agg_results_df, calc_score(ids[i], df_long))
+  }
+  
+  # convert to data.table
+  setDT(agg_results_df)
+  
+  # average score by letter overall. Then join w/ letter mapping to get personality trait names.
+  agg_results_df <- agg_results_df[, .(avg_score = round(mean(final_score)),1), by = letter] %>% 
+    left_join(letter_mapping, by = "letter") %>% 
+    select(personality, avg_score)
+
+  return(agg_results_df)
+}
+
+# get all unique ids
+ids <- df_long$response_id %>% unique()
+
+# run function to aggregate all ids
+agg_results_df <- agg_results(ids, df_long)
+```
+
+Make a bar chart of avg scores
+
+```{r}
+agg_results_df <- agg_results_df %>% arrange(personality)
+ggplot(agg_results_df, aes(x = personality, y = avg_score)) + 
+  geom_col(fill = c(rgb(0/255, 50/255, 98/255))) + 
+  annotate("text", x = 1:5, y = agg_results_df$avg_score-3, 
+           label = agg_results_df$avg_score, color = "white") +
+  #coord_flip() +
+  labs(title = "Aggregated Personality Trait Scores", x = "", y = "Average Score") +
+  theme_minimal()
+```
+
+
+```{r}
+df2 <- df %>% 
+  
+  # this function cleans up column names to make all spaces underscores, and removes special chars  
+  janitor::clean_names() %>% 
+
+  # fix some date columns
+  #mutate_at(c("start_date", "end_date", "recorded_date"), funs(as.Date(., "%m/%d/%Y")))
+  mutate_at(c("start_date", "end_date", "recorded_date"), list(~as.Date(., "%m/%d/%Y")))
+
+
+df2 %>% select(contains("_date")) %>% glimpse
+
+```
+
+
+Get scores for each person, and create a clean dataset
+
+
+```{r}
+all_scores_df <- calc_score(ids[1], wide_output = TRUE)
+for (i in 2:length(ids)){
+  all_scores_df <- rbind(all_scores_df, calc_score(ids[i], wide_output = TRUE))
+}
+
+setDT(all_scores_df)
+```
+
+Join with big dataset and perform final clean
+
+```{r}
+df2 <- df %>% select(-i_am_the_life_of_the_party:-i_am_full_of_ideas) %>% 
+  left_join(all_scores_df, by = "response_id")
+
+# variables to convert to numeric
+num_vars <- c("progress", "duration_in_seconds", "dob_day", "timing_first_click", "timing_last_click",
+              "timing_page_submit", "timing_click_count", "timing_first_click_2", "timing_last_click_2",
+              "timing_page_submit_2", "timing_click_count_2", "age", "gender", "hhi", "ethnicity", 
+              "hispanic", "education", "political_party", "region")
+
+df2[, (num_vars) := lapply(.SD, as.numeric), .SDcols=num_vars]
+```
+
+Save file
+
+```{r}
+#fwrite(df2, "~/Desktop/W241_Survey_Results_Clean.csv")
+```
+
+Do some analysis with charts
+
+```{r}
+df3 <- df2 %>% 
+  mutate(treatment_type = 
+           ifelse(compliance_q_mclaughlin == "Fish", "Mclaughlin", 
+           ifelse(compliance_q_glass == "Confetti (colored)", "Glass blowing", "Non complier"))) %>% 
+  select(personality_e:treatment_type) %>% 
+  melt.data.table(id.vars = "treatment_type", variable.name = "personality", value.name = "score") %>% 
+  mutate(personality = toupper(substr(personality, 13, 13))) %>% 
+  rename(letter = personality) %>% 
+  left_join(letter_mapping, by = "letter")
+
+
+df3_agg <- df3[, .(score = mean(score)), by = c("treatment_type", "personality")]
+
+df3_agg %>% 
+  ggplot(aes(x = personality, y = score, fill = treatment_type)) + 
+  geom_col(position = "dodge") + 
+  theme_minimal()
+
+
+df3[, .(.N / 5), by = c("treatment_type")]
+
+
+agg_results_df <- agg_results_df %>% arrange(personality)
+ggplot(agg_results_df, aes(x = personality, y = avg_score)) + 
+  geom_col(fill = c(rgb(0/255, 50/255, 98/255))) + 
+  annotate("text", x = 1:5, y = agg_results_df$avg_score-3, 
+           label = agg_results_df$avg_score, color = "white") +
+  #coord_flip() +
+  labs(title = "Aggregated Personality Trait Scores", x = "", y = "Average Score") +
+  theme_minimal()
+```
+
+
+
+
+
+
+

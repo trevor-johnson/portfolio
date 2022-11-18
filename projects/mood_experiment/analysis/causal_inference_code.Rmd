@@ -1,0 +1,285 @@
+---
+title: "Initial Work"
+author: "Trevor Johnson"
+date: "11/26/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+Todo:
+
+- Look into raw data, ppl who answered all neutral etc.
+- Clean data: group ethnicity, hispanic 0 1, don't change political party bins, 
+
+
+```{r libraries, include=FALSE}
+library(data.table)
+library(tidyverse)
+library(janitor)
+library(ggplot2)
+library(dplyr)
+library(patchwork)
+library(tidyverse)
+library(lmtest)
+library(sandwich)
+library(stargazer)
+```
+
+```{r}
+#d <- fread("../W241_Survey_Results_Clean.csv")
+d <- fread("~/Desktop/W241_Survey_Results_Clean.csv")
+```
+
+Data cleaning
+
+```{r define vars for who received treatment and who complied}
+d[, complier := ifelse(((d[, dob_day] %% 2 == 1) & (d[, compliance_q_glass] == 'Confetti (colored)')) | 
+                         ((d[, dob_day] %% 2 == 0) & (d[, compliance_q_mclaughlin] == 'Fish')), TRUE, FALSE)]
+d[, treatment := ifelse(d[, dob_day] %% 2 == 0, 1, 0)]
+
+# just to filter on where this aligns with the original var
+d[, how_old_are_you2 := ifelse(age >= 18 & age <= 24, "18-24 years old", 
+                        ifelse(age >= 25 & age <= 34, "25-34 years old",
+                        ifelse(age >= 35 & age <= 44, "35-44 years old",
+                        ifelse(age >= 45 & age <= 54, "45-54 years old",
+                        ifelse(age >= 55 & age <= 64, "55-64 years old",
+                        ifelse(age >= 65, "65+ years old", "idk"))))))]
+
+
+# ethnicity and hispanic: Group ethnicities into ~4 categories (1 other), and then hispanic (0 or 1)
+
+```
+
+Remove time outliers and non-compliers. This gets rid of 24 people. 
+
+
+```{r delete this section later}
+d %>% filter(duration_in_seconds > 1000) %>% nrow() # 23
+d %>% filter((taken_test_before == 'Yes' & familiar_with_test == 'No')) %>% nrow() # 6
+d %>% filter(complier != TRUE) %>% nrow() # 39
+d %>% nrow()
+```
+
+Filtering out bad data
+
+```{r filters}
+d <- d %>% 
+  filter(
+    complier == TRUE, 
+  duration_in_seconds <= 1000, # some ppl took way too long
+  !(taken_test_before == 'Yes' & familiar_with_test == 'No'), # not answering questions correctly b/c can't be unfamiliar and taken test before
+  (what_is_your_gender == "Female" & gender == 2) | (what_is_your_gender == "Male" & gender == 1),
+  how_old_are_you == how_old_are_you2
+  ) %>% 
+  select(-how_old_are_you2)
+```
+
+Convert a few vars to factor
+
+```{r}
+factor_vars <- c("gender", "ethnicity", "hispanic", "political_party", "region", "what_is_your_gender", "education_highest", "zip", "hhi", "treatment")
+d[, (factor_vars) := lapply(.SD, as.factor), .SDcols = factor_vars]
+```
+
+# Analysis
+
+
+```{r}
+# run all tests
+m1 <- lm(personality_e ~ treatment + age + gender + education + region + familiar_with_test + taken_test_before, data=d) # extroversion
+m2 <- lm(personality_a ~ treatment + age + gender + education + region + familiar_with_test + taken_test_before, data=d) # agreeableness
+m3 <- lm(personality_c ~ treatment + age + gender + education + region + familiar_with_test + taken_test_before, data=d) # Conscientiousness
+m4 <- lm(personality_n ~ treatment + age + gender + education + region + familiar_with_test + taken_test_before, data=d) # Neuroticism
+m5 <- lm(personality_o ~ treatment + age + gender + education + region + familiar_with_test + taken_test_before, data=d) # Openness to Experience
+```
+
+```{r}
+m1 <- lm(personality_e ~ treatment + how_old_are_you + what_is_your_gender + education_highest + region + familiar_with_test + taken_test_before + ethnicity + hispanic + political_party, data=d) # extroversion
+m2 <- lm(personality_a ~ treatment + how_old_are_you + what_is_your_gender + education_highest + region + familiar_with_test + taken_test_before + ethnicity + hispanic + political_party, data=d) # agreeableness
+m3 <- lm(personality_c ~ treatment + how_old_are_you + what_is_your_gender + education_highest + region + familiar_with_test + taken_test_before + ethnicity + hispanic + political_party, data=d) # Conscientiousness
+m4 <- lm(personality_n ~ treatment + how_old_are_you + what_is_your_gender + education_highest + region + familiar_with_test + taken_test_before + ethnicity + hispanic + political_party, data=d) # Neuroticism
+m5 <- lm(personality_o ~ treatment + how_old_are_you + what_is_your_gender + education_highest + region + familiar_with_test + taken_test_before + ethnicity + hispanic + political_party, data=d) # Openness to Experience
+```
+
+```{r}
+m1 <- lm(personality_e ~ treatment + how_old_are_you + what_is_your_gender + education_highest + zip + familiar_with_test + taken_test_before + ethnicity + hispanic + political_party, data=d) # extroversion
+m2 <- lm(personality_a ~ treatment + how_old_are_you + what_is_your_gender + education_highest + zip + familiar_with_test + taken_test_before + ethnicity + hispanic + political_party, data=d) # agreeableness
+m3 <- lm(personality_c ~ treatment + how_old_are_you + what_is_your_gender + education_highest + zip + familiar_with_test + taken_test_before + ethnicity + hispanic + political_party, data=d) # Conscientiousness
+m4 <- lm(personality_n ~ treatment + how_old_are_you + what_is_your_gender + education_highest + zip + familiar_with_test + taken_test_before + ethnicity + hispanic + political_party, data=d) # Neuroticism
+m5 <- lm(personality_o ~ treatment + how_old_are_you + what_is_your_gender + education_highest + zip + familiar_with_test + taken_test_before + ethnicity + hispanic + political_party, data=d) # Openness to Experience
+```
+
+
+```{r}
+m1 <- lm(personality_e ~ treatment + how_old_are_you + gender + education_highest + region + familiar_with_test + taken_test_before + ethnicity + hispanic, data=d) # extroversion
+m2 <- lm(personality_a ~ treatment + how_old_are_you + gender + education_highest + region + familiar_with_test + taken_test_before + ethnicity + hispanic, data=d) # agreeableness
+m3 <- lm(personality_c ~ treatment + how_old_are_you + gender + education_highest + region + familiar_with_test + taken_test_before + ethnicity + hispanic, data=d) # Conscientiousness
+m4 <- lm(personality_n ~ treatment + how_old_are_you + gender + education_highest + region + familiar_with_test + taken_test_before + ethnicity + hispanic, data=d) # Neuroticism
+m5 <- lm(personality_o ~ treatment + how_old_are_you + gender + education_highest + region + familiar_with_test + taken_test_before + ethnicity + hispanic, data=d) # Openness to Experience
+```
+
+
+Final models
+
+```{r}
+m1 <- lm(personality_e ~ treatment + how_old_are_you + gender + education_highest + region + familiar_with_test + taken_test_before, data=d) # extroversion
+m2 <- lm(personality_a ~ treatment + how_old_are_you + gender + education_highest + region + familiar_with_test + taken_test_before, data=d) # agreeableness
+m3 <- lm(personality_c ~ treatment + how_old_are_you + gender + education_highest + region + familiar_with_test + taken_test_before, data=d) # Conscientiousness
+m4 <- lm(personality_n ~ treatment + how_old_are_you + gender + education_highest + region + familiar_with_test + taken_test_before, data=d) # Neuroticism
+m5 <- lm(personality_o ~ treatment + how_old_are_you + gender + education_highest + region + familiar_with_test + taken_test_before, data=d) # Openness to Experience
+```
+
+```{r}
+
+```
+
+
+
+
+```{r}
+stargazer(m1, m2, m3, m4, m5,
+    
+    type = "text", 
+    
+    se = list(
+      sqrt(diag(vcovHC(m1))), sqrt(diag(vcovHC(m2))), 
+      sqrt(diag(vcovHC(m3))), sqrt(diag(vcovHC(m4))), 
+      sqrt(diag(vcovHC(m5)))), 
+    
+    #covariate.labels = c("Treatment", "Age", "Gender (Female?)", "Education Years?"),
+    dep.var.labels = c("Extroversion", "Aggreeableness", "Conscientiousness", "Neuroticism", "Openness"),
+    title = "Personality Test Results", 
+    dep.var.caption = "Personality Test"
+)
+```
+
+
+```{r}
+d[,.N, by = c("what_is_your_gender", "gender")]
+
+d[,.N, by = c("age", "how_old_are_you")][order(age)]
+
+d[, how_old_are_you2 := ifelse(age >= 18 & age <= 24, "18-24 years old", 
+                        ifelse(age >= 25 & age <= 34, "25-34 years old",
+                        ifelse(age >= 35 & age <= 44, "35-44 years old",
+                        ifelse(age >= 45 & age <= 54, "45-54 years old",
+                        ifelse(age >= 55 & age <= 64, "55-64 years old",
+                        ifelse(age >= 65, "65+ years old", "idk"))))))]
+
+
+d %>% count(how_old_are_you, how_old_are_you2) %>% arrange(how_old_are_you)
+d %>% filter(how_old_are_you != how_old_are_you2)
+d %>% nrow()
+```
+
+
+```{r}
+df2 = d %>% filter(hhi > 0)
+df2$hhi %>% hist(bins=100)
+
+
+```
+
+
+```{r}
+d %>% count(education, education_highest) %>% arrange(education)
+
+d %>% count(hispanic)
+
+```
+
+
+
+
+
+all the lucid data mapping stuff
+
+```
+question	value	demographic
+education	1	Some high school or less
+education	2	High school graduate
+education	3	Other post high school vocational training
+education	4	Completed some college, but no degree
+education	5	Associate's degree
+education	6	Bachelor's degree
+education	7	Master's or professional degree
+education	8	Doctorate degree
+education	-3105	None of the above
+ethnicity	1	White¬†
+ethnicity	2	Black, or African American
+ethnicity	3	American Indian or Alaska Native¬†
+ethnicity	4	Asian *** Asian Indian¬†
+ethnicity	5	Asian *** Chinese¬†
+ethnicity	6	Asian *** Filipino¬†
+ethnicity	7	Asian *** Japanese¬†
+ethnicity	8	Asian *** Korean¬†
+ethnicity	9	Asian *** Vietnamese¬†
+ethnicity	10	Asian *** Other¬†
+ethnicity	11	Pacific Islander *** Native Hawaiian¬†
+ethnicity	12	Pacific Islander *** Guamanian¬†
+ethnicity	13	Pacific Islander *** Samoan¬†
+ethnicity	14	Pacific Islander *** Other Pacific Islander
+ethnicity	15	Some other race¬†
+ethnicity	16	Prefer not to answer¬†
+gender	1	Male
+gender	2	Female
+hhi	1	Less than $14,999
+hhi	2	$15,000 to $19,999
+hhi	3	$20,000 to $24,999
+hhi	4	$25,000 to $29,999
+hhi	5	$30,000 to $34,999
+hhi	6	$35,000 to $39,999
+hhi	7	$40,000 to $44,999
+hhi	8	$45,000 to $49,999
+hhi	9	$50,000 to $54,999
+hhi	10	$55,000 to $59,999
+hhi	11	$60,000 to $64,999
+hhi	12	$65,000 to $69,999
+hhi	13	$70,000 to $74,999
+hhi	14	$75,000 to $79,999
+hhi	15	$80,000 to $84,999
+hhi	16	$85,000 to $89,999
+hhi	17	$90,000 to $94,999
+hhi	18	$95,000 to $99,999
+hhi	19	$100,000 to $124,999
+hhi	20	$125,000 to $149,999
+hhi	21	$150,000 to $174,999
+hhi	22	$175,000 to $199,999
+hhi	23	$200,000 to $249,999
+hhi	24	$250,000 and above
+hhi	-3105	Prefer not to answer
+hispanic	1	No , not of Hispanic, Latino, or Spanish origin
+hispanic	2	Yes, Mexican, Mexican American, Chicano
+hispanic	3	Yes, Cuban
+hispanic	4	Yes, another Hispanic, Latino, or Spanish origin *** Argentina¬†
+hispanic	5	Yes, another Hispanic, Latino, or Spanish origin *** Colombia¬†
+hispanic	6	Yes, another Hispanic, Latino, or Spanish origin *** Ecuador¬†
+hispanic	7	Yes, another Hispanic, Latino, or Spanish origin *** El Salvadore¬†
+hispanic	8	Yes, another Hispanic, Latino, or Spanish origin *** Guatemala¬†
+hispanic	9	Yes, another Hispanic, Latino, or Spanish origin *** Nicaragua¬†
+hispanic	10	Yes, another Hispanic, Latino, or Spanish origin *** Panama¬†
+hispanic	11	Yes, another Hispanic, Latino, or Spanish origin *** Peru¬†
+hispanic	12	Yes, another Hispanic, Latino, or Spanish origin *** Spain¬†
+hispanic	13	Yes, another Hispanic, Latino, or Spanish origin *** Venezuela¬†
+hispanic	14	Yes, another Hispanic, Latino, or Spanish origin *** Other Country
+hispanic	15	Prefer not to answer
+hispanic	16	Yes, Puerto Rican
+political_party	1	Strong Democrat
+political_party	2	Not very strong Democrat
+political_party	3	Independent leaning Democrat
+political_party	4	Independent - neither
+political_party	5	Independent leaning Republican
+political_party	6	Other - leaning Democrat
+political_party	7	Other - neither
+political_party	8	Other - leaning Republican
+political_party	9	Not very strong Republican
+political_party	10	Strong Republican
+region	1	Northeast
+region	2	Midwest
+region	3	South
+region	4	West
+```
+
+
+
