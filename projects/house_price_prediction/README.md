@@ -4,5 +4,5 @@ A team and I competed in a Kaggle competition to build a machine learning model 
 
 ## Links
 
-- [Final report](https://github.com/trevor-johnson/house_price_prediction/blob/master/final_report/final_report.ipynb)
-- [Kaggle competition](https://www.kaggle.com/c/house-prices-advanced-regression-techniques) 
+- [Final report](https://github.com/trevor-johnson/portfolio/blob/main/projects/house_price_prediction/final_report/final_report.ipynb) 
+- [Kaggle competition website](https://www.kaggle.com/c/house-prices-advanced-regression-techniques) 
