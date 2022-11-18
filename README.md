@@ -22,3 +22,11 @@ Follow the links below to jump to the folder and see the code and more informati
 
 - Overview: Created an ensemble regression model to predict the sale price of a home that scored in the top 10th percentile in terms of MSE of all submissions on Kaggle
 - Tools used: `python`
+
+## [Roulette Simulator](https://github.com/trevor-johnson/portfolio/tree/main/projects/roulette_simulator)
+
+- Overview: A command line simulator/game of Roulette where you can test strategies, view dataviz of your winning history, and take down the house!
+- Tools used: `python`
+
+
+
