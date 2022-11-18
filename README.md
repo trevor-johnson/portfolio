@@ -1,6 +1,6 @@
 # Data Science Portfolio
 
-Follow the links below to jump to the folder and see the code and more information about each project:
+Follow the links below to jump to the folder and see the code and more information about each project.
 
 ## [Reddit TLDR Abstractive Summarization Model](https://github.com/trevor-johnson/portfolio/tree/main/projects/reddit_summarization) 
 
