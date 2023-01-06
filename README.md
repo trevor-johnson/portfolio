@@ -1,4 +1,4 @@
-# Data Science Portfolio
+# Portfolio
 
 Follow the links below to jump to the folder and see the code and more information about each project.
 
