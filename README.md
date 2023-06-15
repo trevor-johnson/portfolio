@@ -2,6 +2,11 @@
 
 Follow the links below to jump to the folder and see the code and more information about each project.
 
+## [HealthCAir](https://github.com/trevor-johnson/portfolio/tree/main/projects/healthCAir)
+
+- Overview: My final capstone project for my UC Berkeley Master's in Data Science program. Using instrumental variables regression, I show the causal impact of PM2.5 (air pollution) on pediatric health outcomes in the state of California. 
+- Tools used: `python`, `PySpark`
+
 ## [Reddit TLDR Abstractive Summarization Model](https://github.com/trevor-johnson/portfolio/tree/main/projects/reddit_summarization) 
 
 - Overview: Used a decoder transformer model in PyTorch to generate abstractive summaries of long Reddit posts. 
