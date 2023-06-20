@@ -2,9 +2,9 @@
 
 Follow the links below to jump to the folder and see the code and more information about each project.
 
-## [HealthCAir](https://github.com/trevor-johnson/portfolio/tree/main/projects/healthCAir)
+## [Impacts of PM2.5 on Pediatric Health Outcomes (HealthCAir)](https://github.com/trevor-johnson/portfolio/tree/main/projects/healthCAir)
 
-- Overview: My final capstone project for my UC Berkeley Master's in Data Science program. My team of 4 won the Hal Varian Award for the best capstone project out of 30+ teams. Using instrumental variables regression, we show the causal impact of PM2.5 (air pollution) on pediatric health outcomes in the state of California. We find the strongest significance of high levels of PM2.5 leading to more pediatric cases of Blood Vessel Disease. [See the website showcasing the final results](https://mattslyons.github.io/JLPS_capstone_project/).
+- Overview: My team's final capstone project for UC Berkeley Master's in Data Science program won the Hal Varian Award for the best capstone project out of 30+ teams. Using instrumental variables regression, we show the causal impact of PM2.5 (air pollution) on pediatric health outcomes in the state of California. We find that high levels of PM2.5 leads to an increase in cases of pediatric blood vessel disease in the state of California. [See the website showcasing the final results](https://mattslyons.github.io/JLPS_capstone_project/).
 - Tools used: `python`, `PySpark`
 
 ## [Reddit TLDR Abstractive Summarization Model](https://github.com/trevor-johnson/portfolio/tree/main/projects/reddit_summarization) 
